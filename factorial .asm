@@ -1,0 +1,22 @@
+ASSUME CS:CODE, DS:DATA
+DATA SEGMENT
+    N DW 4
+DATA ENDS
+CODE SEGMENT
+START:
+    MOV AX, DATA
+    MOV DS, AX
+    
+    MOV CX, N
+    MOV AX, N
+    DEC CX
+    
+LOOP:
+    MUL CX
+    DEC CX
+    JNZ LOOP
+    
+    MOV AH, 4CH
+    INT 21H
+CODE ENDS
+END START
