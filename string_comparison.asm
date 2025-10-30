@@ -1,0 +1,50 @@
+ASSUME CS:CODE, DS:DATA
+DATA SEGMENT
+    STR1 DB 'HELLO$'
+    STR2 DB 'HILLO$'
+    MSG1 DB 'Strings are equal$'
+    MSG2 DB 'Strings are not equal$'
+DATA ENDS
+
+CODE SEGMENT
+START:
+    MOV AX, DATA
+    MOV DS, AX
+    
+    MOV SI, OFFSET STR1
+    MOV DI, OFFSET STR2
+    
+LOOP1:
+    MOV AL, [SI]
+    MOV BL, [DI]
+    CMP AL, BL
+    JNE NEQUAL
+    
+    CMP AL, '$'
+    JE EQUAL
+    
+    INC SI
+    INC DI
+    JMP LOOP1
+
+NEQUAL:
+    MOV DX, OFFSET MSG2
+    CALL PRINT_MSG
+    JMP EXIT
+
+EQUAL:
+    MOV DX, OFFSET MSG1
+    CALL PRINT_MSG
+
+EXIT:
+    MOV AH, 4CH
+    INT 21H
+
+PRINT_MSG PROC
+    MOV AH, 09H
+    INT 21H
+    RET
+PRINT_MSG ENDP
+
+CODE ENDS
+END STARTs

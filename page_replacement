@@ -1,0 +1,143 @@
+#include <stdio.h>
+#define MAX 20 // Max pages or frames
+
+// Global arrays
+int pages[MAX], frames[MAX];
+int n, f; // n = num pages, f = num frames
+
+// --- Helper function to display frames ---
+void display() {
+    for (int i = 0; i < f; i++) {
+        if (frames[i] == -1)
+            printf("- ");
+        else
+            printf("%d ", frames[i]);
+    }
+    printf("\n");
+}
+
+// ---------------- FIFO ----------------
+void FIFO() {
+    int front = 0, faults = 0;
+    for (int i = 0; i < f; i++) frames[i] = -1; // Clear frames
+
+    printf("\n--- FIFO ---\n");
+    for (int i = 0; i < n; i++) {
+        int page = pages[i];
+        int found = 0;
+        
+        // Check if page already exists
+        for (int j = 0; j < f; j++) {
+            if (frames[j] == page) {
+                found = 1;
+                break;
+            }
+        }
+
+        // If not found (page fault)
+        if (!found) {
+            frames[front] = page;      // Replace the "front" page
+            front = (front + 1) % f; // Move front pointer (circular)
+            faults++;
+        }
+        display(); // Show current frames
+    }
+    printf("Total Page Faults (FIFO): %d\n", faults);
+}
+
+// ---------------- LRU ----------------
+void LRU() {
+    int faults = 0, recent[MAX];
+    for (int i = 0; i < f; i++) {
+        frames[i] = -1;
+        recent[i] = -1; // Stores "timestamp" of last use
+    }
+
+    printf("\n--- LRU ---\n");
+    for (int i = 0; i < n; i++) {
+        int page = pages[i];
+        int found = 0;
+
+        for (int j = 0; j < f; j++) {
+            if (frames[j] == page) {
+                found = 1;
+                recent[j] = i; // Update timestamp to current time 'i'
+                break;
+            }
+        }
+
+        if (!found) {
+            // Find the frame with the "minimum" (oldest) timestamp
+            int min_index = 0;
+            for (int j = 1; j < f; j++) {
+                if (recent[j] < recent[min_index]) {
+                    min_index = j;
+                }
+            }
+            frames[min_index] = page; // Replace
+            recent[min_index] = i;  // Set timestamp for new page
+            faults++;
+        }
+        display();
+    }
+    printf("Total Page Faults (LRU): %d\n", faults);
+}
+
+// ---------------- LFU ----------------
+/* Note: This is a simple LFU. A tie-breaker (like FIFO) is not implemented. */
+void LFU() {
+    int faults = 0, freq[MAX];
+    for (int i = 0; i < f; i++) {
+        frames[i] = -1;
+        freq[i] = 0; // Stores frequency count
+    }
+
+    printf("\n--- LFU ---\n");
+    for (int i = 0; i < n; i++) {
+        int page = pages[i];
+        int found = 0;
+
+        for (int j = 0; j < f; j++) {
+            if (frames[j] == page) {
+                found = 1;
+                freq[j]++; // Increment frequency
+                break;
+            }
+        }
+
+        if (!found) {
+            // Find the frame with the "minimum" frequency
+            int min_index = 0;
+            for (int j = 1; j < f; j++) {
+                if (freq[j] < freq[min_index]) {
+                    min_index = j;
+                }
+            }
+            frames[min_index] = page; // Replace
+            freq[min_index] = 1;      // Reset frequency for new page
+            faults++;
+        }
+        display();
+    }
+    printf("Total Page Faults (LFU): %d\n", faults);
+}
+
+// ---------------- MAIN ----------------
+int main() {
+    printf("Enter number of pages: ");
+    scanf("%d", &n);
+
+    printf("Enter page reference string:\n");
+    for (int i = 0; i < n; i++)
+        scanf("%d", &pages[i]);
+
+    printf("Enter number of frames: ");
+    scanf("%d", &f);
+
+    // Run all three algorithms
+    FIFO();
+    LRU();
+    LFU();
+
+    return 0;
+}
